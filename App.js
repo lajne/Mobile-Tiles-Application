@@ -68,6 +68,7 @@ class HomeScreen extends React.Component {
   // i AsyncStorage.
   // ----------------------------
   getCache(id) {
+    let me = this;
     AsyncStorage.getItem(id, (error, result) => {
       let jsonStr = result;
       if(!jsonStr) {
@@ -110,9 +111,10 @@ class HomeScreen extends React.Component {
     return (
       <TouchableOpacity key={"mytile" + i}
         onPress={() => onPress()}
-        style={[styles.menuTile, {
-          backgroundColor: tile.color
-        }]}
+        style={[styles.menuTile, 
+          {backgroundColor: tile.color},
+          {flex: tile.flex}
+        ]}
       >
         <Text style={styles.tileText}>
           {tile.title}
@@ -234,7 +236,7 @@ const RootStack = StackNavigator(
       headerStyle: {
         backgroundColor: '#2E3440',
         borderBottomWidth: 0,
-        height: 80,
+        // height: 80,
       },
       headerTitleStyle: {
         color: "white",
@@ -268,7 +270,8 @@ const styles = StyleSheet.create({
     flex: 12, flexDirection: 'row',
   },
   menuTile: {
-    flex: 1, margin: 8, height: 90, justifyContent: 'center', borderRadius: 7,
+    // flex: 1, 
+    margin: 8, height: 90, justifyContent: 'center', borderRadius: 7,
   },
   tileText: {
     textAlign: 'center', fontSize: 18, fontWeight: 'bold'
