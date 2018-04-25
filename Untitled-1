@@ -1,0 +1,755 @@
+import React, { Component } from 'react';
+import {
+  Button,
+  Alert,
+  TouchableHighlight,
+  TouchableOpacity,
+  TouchableNativeFeedback,
+  TouchableWithoutFeedback,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  ListView,
+  FlatList,
+  ScrollView
+} from 'react-native';
+import { StackNavigator } from 'react-navigation';
+import { List, ListItem } from "react-native-elements";
+
+type Props = {};
+
+class HomeScreen extends Component<Props> {
+
+  static navigationOptions = {
+    title: 'Startsida',
+  };
+
+  render() {
+    return (
+      <View style={STYLES.pageSettings}>
+        <TouchableOpacity
+          onPress={() => this.props.navigation.navigate('Selection')}
+           underlayColor='transparent' 
+           style={STYLES.startBtn}>
+          <Text style={[STYLES.menuText, {color: 'white' }]}>VÄLJ AVDELNING</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+}
+
+class SelectionScreen extends Component<Props> {
+
+  static navigationOptions = {
+      title: 'Avdelningar',
+  };
+
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+
+  _onPressButton() {
+    Alert.alert('Tap!')
+  }
+
+  componentDidMount() {
+    this.getDataFromApi();
+  }
+
+  // Returnerar tiles, beroende på hur många cols som eftersträvas kommer de med olika stylesheets
+  createTile(i) {
+    if(this.state.data.tile[i].cols == 1) {
+      return(
+        <TouchableOpacity key={"key"+[i]}
+          onPress={() => this.props.navigation.navigate(this.state.data.tile[i].title)}
+           underlayColor='transparent' 
+           style={[STYLES.menuobject1, 
+           { backgroundColor: this.state.data.tile[i].color }]}>
+          <Text style={STYLES.menuText}>{this.state.data.tile[i].title}</Text>
+        </TouchableOpacity>
+      ) 
+    }
+    else if(this.state.data.tile[i].cols == 6) {
+      return(
+        <TouchableOpacity key={"key"+[i]}
+          onPress={() => this.props.navigation.navigate(this.state.data.tile[i].title)}
+            underlayColor='transparent'
+            style={[STYLES.menuobject2,
+            { backgroundColor: this.state.data.tile[i].color }]}>
+          <Text style={STYLES.menuText}>{this.state.data.tile[i].title}</Text>
+        </TouchableOpacity>
+      )
+    }
+    else {
+      return(
+      <TouchableOpacity key={"key"+[i]} 
+        onPress={() => this.props.navigation.navigate(this.state.data.tile[i].title)}
+          underlayColor='transparent'
+          style={[STYLES.menuobject3, 
+          { backgroundColor: this.state.data.tile[i].color }]}>
+        <Text style={STYLES.menuText}>{this.state.data.tile[i].title}</Text>
+      </TouchableOpacity>
+      )
+    }
+  }
+
+  // Hämtar tiles som pushas in i en array som ligger i en view som repesenterar en row
+  createRow(index, tiles) {
+    const ARRAY = []
+    tiles += index
+
+    while(index < tiles) {
+      ARRAY.push(this.createTile(index))
+      index++
+    }
+    return(
+      <View key={"key"+index}style={STYLES.menuItemRow}>
+        {ARRAY}
+      </View>
+    )
+  }
+
+// Varför buggar det så jag måste ta antalet -1???
+  // Checkar hur många tiles det ska vara på raden
+  tilesOnThisRow(index) {
+    let numberOfTiles = this.state.data.info[0].tiles
+    let counter = 1
+
+    if(index < numberOfTiles - 1) {
+      while(this.state.data.tile[index].row == this.state.data.tile[index+1].row) {
+        counter++
+        index++
+      }
+    }
+    return counter
+  }
+  // Returnerar raderna i en array 
+  createContent(tiles) {
+    const ARRAY = []
+    i=0
+
+    while(i < tiles) {
+      ARRAY.push(this.createRow(i, this.tilesOnThisRow(i)))
+      i += this.tilesOnThisRow(i)
+    }
+    return ARRAY
+  }
+
+  // Sätter upp en grund för skärmen
+  initScreen() {
+    var numberOfTiles = this.state.data.info[0].tiles
+    return(
+      <View style={STYLES.container}>
+        <ScrollView>
+          <View style={STYLES.content}>
+            {this.createContent(numberOfTiles)}
+          </View>
+        </ScrollView>
+      </View>
+    )
+  }
+
+  // Fetchar data från vårt API
+  getDataFromApi() {
+  let me = this;
+  return fetch('https://apple-bar.glitch.me/')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      me.setState({ data: responseJson });
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
+  // Renderar endast om data finns
+  render() {
+    console.log("render1", this.state.data);
+    if(!this.state.data){return null}
+    console.log("render2", this.state.data);
+    console.log(this.state.data.info[0].tiles)
+
+    return (
+      this.initScreen()
+    );
+  }
+}
+
+// Olika screens
+class ItScreen extends Component<Props> {
+
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+
+  static navigationOptions = {
+      title: 'IT',
+  };
+
+  componentDidMount() {
+    this.getDataFromApi();
+  }
+
+  getDataFromApi() {
+  let me = this;
+  return fetch('https://apple-bar.glitch.me/it')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      me.setState({ data: responseJson });
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
+  render() {
+    console.log("render", this.state.data)
+    if(!this.state.data){return null}
+    console.log("data", this.state.data)
+    console.log("documents", this.state.data.documents)
+    console.log("titles", this.state.data.documents[0].title)
+    return (
+      <View style={[STYLES.container ,STYLES.pageSettings]}>
+        <ScrollView>
+          <FlatList
+            data={this.state.data.documents}
+            keyExtractor={(x, i) => i.toString()}
+            renderItem={({ item }) =>
+              <TouchableOpacity key={"key"+[i]}>
+                <Text style={STYLES.list} >
+                  {item.title}
+                </Text>
+              </TouchableOpacity>}
+          />
+        </ScrollView>
+      </View>
+    );
+  }
+}
+
+class HrScreen extends Component<Props> {
+
+  static navigationOptions = {
+      title: 'HR',
+  };
+
+  render() {
+    return (
+      <View style={STYLES.pageSettings}>
+        <Text style={STYLES.pageText}>HR-SIDAN</Text>
+      </View>
+    );
+  }
+}
+class SaleScreen extends Component<Props> {
+
+  static navigationOptions = {
+      title: 'Sälj',
+  };
+
+  render() {
+    return (
+      <View style={STYLES.pageSettings}>
+        <Text style={STYLES.pageText}>SÄLJ-SIDAN</Text>
+      </View>
+    );
+  }
+}
+
+const ROOTSTACK = StackNavigator(
+  {
+    Home: {
+      screen: HomeScreen,
+    },
+    Selection: {
+      screen: SelectionScreen,
+    },
+    IT: {
+      screen: ItScreen
+    },
+    HR: {
+      screen: HrScreen
+    },
+    Sälj: {
+      screen: SaleScreen
+    }
+  },
+  {
+    initialRouteName: 'Home',
+    navigationOptions: {
+       headerStyle: {
+       },
+      headerTitleStyle: {
+        fontWeight: 'bold',
+        fontSize: 25,
+        fontFamily: 'AppleSDGothicNeo-SemiBold'
+      },
+    },
+  }
+);
+
+export default class App extends Component<Props> {
+  render() {
+    return <ROOTSTACK />;
+  }
+}
+
+const STYLES = StyleSheet.create({
+  startBtn: {
+    backgroundColor: '#34495E',
+    height: 90,
+    justifyContent: 'center',
+    paddingLeft: 50,
+    paddingRight: 50,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: 'white'
+  },
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    backgroundColor: '#34495E'
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'space-between',
+    flexDirection: 'column',
+  },
+  menuItemRow: {
+    margin: 5,
+    flexDirection: 'row',
+    flex: 12,
+  },
+  menuobject1: {
+    margin: 5,
+    justifyContent: 'center',
+    flex: 1,
+    height: 90,
+    borderRadius: 50,
+  },
+  menuobject2: {
+    margin: 5,
+    justifyContent: 'center',
+    flex: 6,
+    height: 90,
+  },
+  menuobject3: {
+    margin: 5,
+    justifyContent: 'center',
+    flex: 4,
+    height: 90,
+    borderRadius: 15,
+  },
+  menuText: {
+    fontSize: 25,
+    fontFamily: 'AppleSDGothicNeo-SemiBold',
+    margin: 10,
+    textAlign: 'center',
+  },
+  itemlist: {
+    padding: 10,
+    fontSize: 18,
+    height: 44,
+    color: 'black',
+  },
+  sectionHeader: {
+    paddingTop: 2,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingBottom: 2,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'black',
+    backgroundColor: 'lightgrey'
+  },
+  pageSettings: {
+    backgroundColor: '#34495E',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pageText: {
+    fontSize: 35,
+    color: 'white',
+    fontFamily: 'AppleSDGothicNeo-SemiBold',
+  },
+  list: {
+    fontSize: 20,
+    color: 'white',
+    fontFamily: 'AppleSDGothicNeo-SemiBold',
+    margin: 10,
+  }
+});import React, { Component } from 'react';
+import {
+  Button,
+  Alert,
+  TouchableHighlight,
+  TouchableOpacity,
+  TouchableNativeFeedback,
+  TouchableWithoutFeedback,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  ListView,
+  FlatList,
+  ScrollView,
+  Image
+} from 'react-native';
+import { StackNavigator } from 'react-navigation';
+import { List, ListItem } from "react-native-elements";
+
+type Props = {};
+
+class HomeScreen extends Component<Props> {
+
+  static navigationOptions = {
+      title: 'Startsida',
+  };
+
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+
+  _onPressButton() {
+    Alert.alert('Tap!')
+  }
+
+  componentDidMount() {
+    this.getDataFromApi();
+  }
+
+  // Returnerar tiles, beroende på hur många cols som eftersträvas kommer de med olika stylesheets
+  createTile(i) {
+    if(this.state.data.tile[i].cols == 1) {
+      return(
+        <TouchableOpacity key={"key"+[i]}
+          onPress={() => this.props.navigation.navigate(this.state.data.tile[i].title)}
+           underlayColor='transparent' 
+           style={[STYLES.menuobject1, 
+           { backgroundColor: this.state.data.tile[i].color }]}>
+          <Text style={STYLES.menuText}>{this.state.data.tile[i].title}</Text>
+        </TouchableOpacity>
+      ) 
+    }
+    else if(this.state.data.tile[i].cols == 6) {
+      return(
+        <TouchableOpacity key={"key"+[i]}
+          onPress={() => this.props.navigation.navigate(this.state.data.tile[i].title)}
+            underlayColor='transparent'
+            style={[STYLES.menuobject2,
+            { backgroundColor: this.state.data.tile[i].color }]}>
+          <Text style={STYLES.menuText}>{this.state.data.tile[i].title}</Text>
+        </TouchableOpacity>
+      )
+    }
+    else {
+      return(
+      <TouchableOpacity key={"key"+[i]} 
+        onPress={() => this.props.navigation.navigate(this.state.data.tile[i].title)}
+          underlayColor='transparent'
+          style={[STYLES.menuobject3, 
+          { backgroundColor: this.state.data.tile[i].color }]}>
+        <Text style={STYLES.menuText}>{this.state.data.tile[i].title}</Text>
+      </TouchableOpacity>
+      )
+    }
+  }
+
+  // Hämtar tiles som pushas in i en array som ligger i en view som repesenterar en row
+  createRow(index, tiles) {
+    const ARRAY = []
+    tiles += index
+
+    while(index < tiles) {
+      ARRAY.push(this.createTile(index))
+      index++
+    }
+    return(
+      <View key={"key"+index}style={STYLES.menuItemRow}>
+        {ARRAY}
+      </View>
+    )
+  }
+
+// Varför buggar det så jag måste ta antalet -1???
+  // Checkar hur många tiles det ska vara på raden
+  tilesOnThisRow(index) {
+    let numberOfTiles = this.state.data.info[0].tiles
+    let counter = 1
+
+    if(index < numberOfTiles - 1) {
+      while(this.state.data.tile[index].row == this.state.data.tile[index+1].row) {
+        counter++
+        index++
+      }
+    }
+    return counter
+  }
+  // Returnerar raderna i en array 
+  createContent(tiles) {
+    const ARRAY = []
+    i=0
+
+    while(i < tiles) {
+      ARRAY.push(this.createRow(i, this.tilesOnThisRow(i)))
+      i += this.tilesOnThisRow(i)
+    }
+    return ARRAY
+  }
+
+  // Sätter upp en grund för skärmen
+  initScreen() {
+    var numberOfTiles = this.state.data.info[0].tiles
+    return(
+      <View style={STYLES.container}>
+        <ScrollView>
+          <View style={STYLES.content}>
+            {this.createContent(numberOfTiles)}
+          </View>
+        </ScrollView>
+      </View>
+    )
+  }
+
+  // Fetchar data från vårt API
+  getDataFromApi() {
+  let me = this;
+  return fetch('https://apple-bar.glitch.me/')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      me.setState({ data: responseJson });
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
+  // Renderar endast om data finns
+  render() {
+    console.log("render1", this.state.data);
+    if(!this.state.data){
+      return (
+        <View style={STYLES.pageSettings}>
+            <Image
+            source={require('./Värnamo+Energi.jpg')}
+            />
+        </View>
+      );
+    }
+    console.log("render2", this.state.data);
+    console.log(this.state.data.info[0].tiles)
+
+    return (
+      this.initScreen()
+    );
+  }
+}
+
+// Olika screens
+class ItScreen extends Component<Props> {
+
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+
+  static navigationOptions = {
+      title: 'IT',
+  };
+
+  componentDidMount() {
+    this.getDataFromApi();
+  }
+
+  getDataFromApi() {
+  let me = this;
+  return fetch('https://apple-bar.glitch.me/it')
+    .then((response) => response.json())
+    .then((responseJson) => {
+      me.setState({ data: responseJson });
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
+  render() {
+    console.log("render", this.state.data)
+    if(!this.state.data){return null}
+    console.log("data", this.state.data)
+    console.log("documents", this.state.data.documents)
+    console.log("titles", this.state.data.documents[0].title)
+    return (
+      <View style={[STYLES.container ,STYLES.pageSettings]}>
+        <ScrollView>
+          <FlatList
+            data={this.state.data.documents}
+            keyExtractor={(x, i) => i.toString()}
+            renderItem={({ item }) =>
+              <TouchableOpacity key={"key"+[i]}>
+                <Text style={STYLES.list} >
+                  {item.title}
+                </Text>
+              </TouchableOpacity>}
+          />
+        </ScrollView>
+      </View>
+    );
+  }
+}
+
+class HrScreen extends Component<Props> {
+
+  static navigationOptions = {
+      title: 'HR',
+  };
+
+  render() {
+    return (
+      <View style={STYLES.pageSettings}>
+        <Text style={STYLES.pageText}>HR-SIDAN</Text>
+      </View>
+    );
+  }
+}
+class SaleScreen extends Component<Props> {
+
+  static navigationOptions = {
+      title: 'Sälj',
+  };
+
+  render() {
+    return (
+      <View style={STYLES.pageSettings}>
+        <Text style={STYLES.pageText}>SÄLJ-SIDAN</Text>
+      </View>
+    );
+  }
+}
+
+const ROOTSTACK = StackNavigator(
+  {
+    Home: {
+      screen: HomeScreen,
+    },
+    IT: {
+      screen: ItScreen
+    },
+    HR: {
+      screen: HrScreen
+    },
+    Sälj: {
+      screen: SaleScreen
+    }
+  },
+  {
+    initialRouteName: 'Home',
+    navigationOptions: {
+       headerStyle: {
+       },
+      headerTitleStyle: {
+        fontWeight: 'bold',
+        fontSize: 25,
+        fontFamily: 'AppleSDGothicNeo-SemiBold'
+      },
+    },
+  }
+);
+
+export default class App extends Component<Props> {
+  render() {
+    return <ROOTSTACK />;
+  }
+}
+
+const STYLES = StyleSheet.create({
+  startBtn: {
+    backgroundColor: '#34495E',
+    height: 90,
+    justifyContent: 'center',
+    paddingLeft: 50,
+    paddingRight: 50,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: 'white'
+  },
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    backgroundColor: '#34495E'
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'space-between',
+    flexDirection: 'column',
+  },
+  menuItemRow: {
+    margin: 5,
+    flexDirection: 'row',
+    flex: 12,
+  },
+  menuobject1: {
+    margin: 5,
+    justifyContent: 'center',
+    flex: 1,
+    height: 90,
+    borderRadius: 50,
+  },
+  menuobject2: {
+    margin: 5,
+    justifyContent: 'center',
+    flex: 6,
+    height: 90,
+  },
+  menuobject3: {
+    margin: 5,
+    justifyContent: 'center',
+    flex: 4,
+    height: 90,
+    borderRadius: 15,
+  },
+  menuText: {
+    fontSize: 25,
+    fontFamily: 'AppleSDGothicNeo-SemiBold',
+    margin: 10,
+    textAlign: 'center',
+  },
+  itemlist: {
+    padding: 10,
+    fontSize: 18,
+    height: 44,
+    color: 'black',
+  },
+  sectionHeader: {
+    paddingTop: 2,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingBottom: 2,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'black',
+    backgroundColor: 'lightgrey'
+  },
+  pageSettings: {
+    backgroundColor: '#34495E',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pageText: {
+    fontSize: 35,
+    color: 'white',
+    fontFamily: 'AppleSDGothicNeo-SemiBold',
+  },
+  list: {
+    fontSize: 20,
+    color: 'white',
+    fontFamily: 'AppleSDGothicNeo-SemiBold',
+    margin: 10,
+  }
+});

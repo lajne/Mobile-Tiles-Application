@@ -1,0 +1,21 @@
+
+[/]    1.  fetcha alltid:
+          - i glitch: versionsnummer
+            - lagra det separat (key?)
+          - om det inte går att fetcha
+            - getItem(ver.nr(key)) ?
+/-------Ska versionsnumret vara key:n i asyncstorage?-------/
+
+
+[x]    2.  doc-listing:
+          - glitchobject: documents
+          - kolla mail hur det skall se ut (stora ikoner)
+          - "HR -> Nytt konto -> Manual -> Doc"
+    
+
+
+OM vi inte får tillbaka daniels version:
+[x] Asynstorage.getItem()
+[x] Splashscreen
+[x] Dynamisk sid-titel (static navigateOptions)
+[x] Design på tiles (borderradius bl.a) 
