@@ -21,7 +21,9 @@ import { YellowBox } from 'react-native';
 YellowBox.ignoreWarnings(
   ['Warning: isMounted(...) is deprecated', 'Module RCTImageLoader']
 );
+
 import docImage from './file.png';
+import styles from './Stylesheet.js';
 
 var SavePath = Platform.OS === 'ios' ?
   RNFS.MainBundlePath : RNFS.DocumentDirectoryPath;
@@ -257,27 +259,3 @@ export default class App extends React.Component {
       return <RootStack />;
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, flexDirection: 'column', backgroundColor: '#4C566A',
-  },
-  content: {
-    flex: 1, flexDirection: 'column', margin: 7,
-    alignItems: 'center', justifyContent: 'center', backgroundColor: '#4C566A'
-  },
-  menuRow: {
-    flex: 12, flexDirection: 'row',
-  },
-  menuTile: {
-    // flex: 1, 
-    margin: 8, height: 90, justifyContent: 'center', borderRadius: 7,
-  },
-  tileText: {
-    textAlign: 'center', fontSize: 18, fontWeight: 'bold'
-  },
-  loadingView: {
-    flex: 1, flexDirection: 'column', alignItems: 'center', 
-    justifyContent: 'center', backgroundColor: '#4C566A',
-  },
-});
